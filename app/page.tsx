@@ -1,10 +1,8 @@
-import Image from "next/image";
-
+import Products from '../src/components/products/Products.jsx';
 export default function Home() {
   return (
     <main>
-      <h1>Dhaya Raj</h1>
-      <p>ShopDesk - training app</p>
+      <Products />
     </main>
   );
 }
