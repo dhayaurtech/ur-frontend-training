@@ -1,43 +1,45 @@
-export type Product = {
-  id: string;
-  name: string;
-  sku: string;
-  category: ProductCategory;
-  price: number;
-  stock: number;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
+export interface Product{
+    id:number;
+    title:string;
+    description:string;
+    category:string;
+    price:number;
+    stock:number;
+    rating?:number;
+    thumbnail:string;
+    images:[];
+    discountPercentage:number;
+    brand:string;
+    meta:{
+        createdAt:string;
+    }
+    reviews:[
+        {
+            rating:string;
+            comment:string;
+            date:string;
+            reviewerName:string;
+            reviewerEmail:string;
+        }
+    ];
+    weight:number;
+    dimensions:{
+        width:string;
+        height:string;
+        depth:string;
+    }
 
-export type ProductCategory =
-  | 'Electronics'
-  | 'Clothing'
-  | 'Books'
-  | 'Home'
-  | 'Toys';
+}
 
-export type CreateProductInput = Omit<
-  Product,
-  'id' | 'createdAt' | 'updatedAt'
->;
-export type UpdateProductInput = Partial<CreateProductInput>;
+export interface ProductResponse{
+    products:Product[];
+    total:number;
+    skip:number;
+    limit:number;
+}
 
-export type LocalProductCategory =
-  | 'all'
-  | 'electronics'
-  | 'clothing'
-  | 'books'
-  | 'home'
-  | 'toys';
+export type SortBy = "name" | "price" | "createdat";
+export type SortDirection = "ascending" | "descending";
 
-export type LocalProduct = {
-  id: number;
-  name: string;
-  category: LocalProductCategory;
-  price: number;
-  stock: number;
-  isActive: boolean;
-  createdAt: string;
-};
+export type ProductCategory = string | "all";
+export type ProductBrand = string | "all";

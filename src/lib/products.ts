@@ -1,92 +1,77 @@
-import products from '../data/products.json' with { type: 'json' };
-import type { LocalProduct } from '../types/product';
-import type { LocalProductCategory } from '../types/product';
+import { Product } from "@/src/types/product";
 
-const localproducts = products as LocalProduct[];
-
-export function searchProducts(
-  product: LocalProduct[],
-  query: string,
-): LocalProduct[] {
+export function searchProducts(product: Product[], query: string): Product[] {
   const searchProducts = query.trim().toLowerCase();
 
-  if (searchProducts === '') {
-    return [];
+  if (searchProducts === "") {
+    return product;
   }
 
   const searchProds = product.filter(
     (prod) =>
-      prod.name.toLowerCase().includes(searchProducts) ||
+      prod.title.toLowerCase().includes(searchProducts) ||
       prod.category.toLowerCase().includes(searchProducts),
   );
 
   return searchProds;
 }
 
-// console.log("Search products : ", searchProducts(localproducts, "Electronics"));
-// console.log("Search products : ", searchProducts(localproducts, "mouse"));
-
 export function filterProductsByCategory(
-  products: LocalProduct[],
-  category: LocalProductCategory,
-): LocalProduct[] {
+  products: Product[],
+  category: string,
+): Product[] {
   const categoryName: string = category.trim().toLowerCase();
 
-  if (categoryName === 'all') {
+  if (categoryName === "all") {
     return products;
   }
 
-  const filterProds: LocalProduct[] = products.filter(
+  const filterProds: Product[] = products.filter(
     (product) => product.category.toLowerCase() === categoryName,
   );
 
   return filterProds;
 }
 
-// console.log(
-//   "Filter products : ",
-//   filterProductsByCategory(localproducts, "all"),
-// );
-
 export function sortProducts(
-  products: LocalProduct[],
+  products: Product[],
   field: string,
   direction: string,
-): LocalProduct[] {
+): Product[] {
   const sortDirection = direction.trim().toLowerCase();
   const sortField = field.trim().toLowerCase();
 
-  if (sortDirection === 'ascending') {
-    if (sortField === 'name') {
-      const sortByName: LocalProduct[] = products.toSorted((a, b) =>
-        a.name.localeCompare(b.name),
+  if (sortDirection === "ascending") {
+    if (sortField === "name") {
+      const sortByName: Product[] = products.toSorted((a, b) =>
+        a.title.localeCompare(b.title),
       );
       return sortByName;
-    } else if (sortField === 'price') {
-      const sortByPrice: LocalProduct[] = products.toSorted(
+    } else if (sortField === "price") {
+      const sortByPrice: Product[] = products.toSorted(
         (a, b) => a.price - b.price,
       );
       return sortByPrice;
-    } else if (sortField === 'createdat') {
-      const sortByDate: LocalProduct[] = products.toSorted(
+    } else if (sortField === "createdat") {
+      const sortByDate: Product[] = products.toSorted(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          new Date(a.meta.createdAt).getTime() - new Date(b.meta.createdAt).getTime(),
       );
       return sortByDate;
     }
-  } else if (sortDirection === 'descending') {
-    if (sortField === 'name') {
+  } else if (sortDirection === "descending") {
+    if (sortField === "name") {
       const sortByName = products.toSorted((a, b) =>
-        b.name.localeCompare(a.name),
+        b.title.localeCompare(a.title),
       );
       return sortByName;
-    } else if (sortField === 'price') {
+    } else if (sortField === "price") {
       const sortByPrice = products.toSorted((a, b) => b.price - a.price);
       return sortByPrice;
-    } else if (sortField === 'createdat') {
+    } else if (sortField === "createdat") {
       const sortByDate = products.toSorted(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          new Date(b.meta.createdAt).getTime() - new Date(a.meta.createdAt).getTime(),
       );
       return sortByDate;
     }
@@ -95,23 +80,10 @@ export function sortProducts(
   return products;
 }
 
-// console.log(
-//   "Sorted Products by name : ",
-//   sortProducts(localproducts, "name", "descending"),
-// );
-// console.log(
-//   "Sorted Products by price : ",
-//   sortProducts(localproducts, "price", "ascending"),
-// );
-// console.log(
-//   "Sorted Products by createdAt : ",
-//   sortProducts(localproducts, "createdAt", "descending"),
-// );
-
-export function getInventorySummary(products: LocalProduct[]): object {
+export function getInventorySummary(products: Product[]) {
   const totalProducts: number = products.length;
   const activeProducts: number = products.filter(
-    (product) => product.isActive,
+    (product) => product.stock > 0,
   ).length;
   const outOfStock: number = products.filter(
     (product) => product.stock === 0,
@@ -123,67 +95,3 @@ export function getInventorySummary(products: LocalProduct[]): object {
 
   return { totalProducts, activeProducts, outOfStock, totalStockValue };
 }
-
-// console.log("Inventory Summary : ", getInventorySummary(localproducts));
-
-export function formatPrice(amount: number): string {
-  const price = new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2,
-  }).format(amount);
-
-  return price;
-}
-
-// console.log(formatPrice(1299));
-// console.log(formatPrice(50.25));
-
-function throwCatchError(errMsg: string): never {
-  throw new Error(errMsg);
-}
-
-type productCategory = 'beauty' | 'fragrances' | 'furniture' | 'groceries';
-
-interface Product {
-  id: number;
-  title: string;
-  category: productCategory;
-  price: number;
-}
-
-type product = {
-  products: Product[];
-};
-
-function isProduct(value: unknown): value is product {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'products' in value &&
-    Array.isArray(value.products)
-  );
-}
-
-export async function fetchProducts(url: string): Promise<Product[]> {
-  try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throwCatchError(`Request failed : ${response.status}`);
-    }
-
-    const data: unknown = await response.json();
-    if (!isProduct(data)) {
-      throwCatchError('Invalid product');
-    }
-
-    return data.products;
-  } catch (error) {
-    throwCatchError(`Failed to fetch products : ${error}`);
-  }
-}
-
-fetchProducts('https://dummyjson.com/products')
-  .then((prods) => console.log(prods.map((prod) => prod)))
-  .catch((err) => console.error(err.message));
