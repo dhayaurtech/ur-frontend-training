@@ -1,10 +1,17 @@
-import Image from "next/image";
+import InventorySummary from "@/src/components/products/InventorySummary";
+import ProductList from "@/src/components/products/ProductList";
+import { fetchProducts } from "@/src/services/productService";
 
-export default function Home() {
+type ProductsPageProps = {
+  searchParams:Promise<{search?:string}>
+}
+export default async function Home({searchParams}:ProductsPageProps) {
+  const {search=""} = await searchParams;
+  const products = await fetchProducts()
   return (
     <main>
-      <h1>Dhaya Raj</h1>
-      <p>ShopDesk - training app</p>
+      {/* <InventorySummary products={products}/> */}
+      <ProductList products={products} initialQuery={search}/>
     </main>
   );
 }
