@@ -1,0 +1,23 @@
+{
+  "folders": [
+	{
+		"path": ".."
+	},
+	{
+		"path": "../../git-practice"
+	},
+	{
+		"path": "../../JS-Practice"
+	},
+	{
+		"path": "../../TypeScript-Practice"
+	},
+	{
+		"path": "../../react_practice_app"
+	},
+	{
+		"path": "../../shop_desk_app"
+	}
+],
+  "settings": {}
+}
