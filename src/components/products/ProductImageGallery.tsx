@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
-import Image from "next/image";
 
 type ProductImageGalleryProps = {
   images: string[];
@@ -42,9 +41,7 @@ export default function ProductImageGallery({
     <div>
       {/* Main image */}
       <div className="group relative flex h-72 items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-5 sm:h-96">
-        <Image
-          width={600}
-          height={600}
+        <img
           src={validImages[activeIndex]}
           alt={`${title} - image ${activeIndex + 1}`}
           className="h-full w-full object-contain"
@@ -93,9 +90,7 @@ export default function ProductImageGallery({
                     : "border-gray-200 hover:border-violet-300"
                 }`}
               >
-                <Image
-                  width={50}
-                  height={50}
+                <img
                   src={image}
                   alt=""
                   className="h-full w-full object-contain"

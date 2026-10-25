@@ -1,8 +1,52 @@
 "use client";
-
+import { apiClient } from "@/lib/api-client";
 import { Bell, UserRound, ChevronDown } from "lucide-react";
+import {useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const Navbar = () => {
+
+type NavbarProps = {
+  isAuthenticated:boolean;
+}
+
+export default function Navbar({isAuthenticated = true}:NavbarProps){
+  const router = useRouter();
+  type User = {
+  name: string;
+  email: string;
+};
+
+const [user, setUser] = useState<User | null>(null);
+
+useEffect(() => {
+  async function fetchUser() {
+    try {
+      const result = await apiClient.get<User>('/auth');
+      setUser(result);
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+    }
+  }
+
+  fetchUser();
+}, []);
+  const handleLogout = async() => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`,{
+        method:'POST',
+        credentials:"include"
+      });
+
+      if(!response.ok){
+        throw new Error("Logout failed");
+      }
+
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed : ",error);
+    }
+  }
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
       <nav className="flex min-h-16 items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
@@ -29,26 +73,38 @@ const Navbar = () => {
 
           <div className="hidden h-8 w-px bg-gray-200 sm:block" />
 
-          <button
-            type="button"
-            className="flex items-center gap-2 rounded-xl p-1.5 transition hover:bg-gray-50"
-            aria-label="User profile"
-          >
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-xl border-2 border-violet-200 bg-violet-100 px-3 py-1.5 text-sm text-violet-700"
+            >
+              Logout
+            </button>
+            ):(
+              <button
+              type="button"
+              onClick={() => router.push('/login')}
+              className="rounded-xl border-2 border-violet-200 bg-violet-100 px-3 py-1.5 text-sm text-violet-700"
+            >
+              Login
+            </button>
+            )}
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 text-violet-700">
               <UserRound size={19} />
             </div>
 
             <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold text-gray-800">Admin</p>
+              <p className="text-sm font-semibold text-gray-800">{user ? user.name : "Admin"}</p>
               <p className="text-xs text-gray-500">Store Manager</p>
             </div>
 
             <ChevronDown size={16} className="hidden text-gray-400 sm:block" />
-          </button>
+        </div>
         </div>
       </nav>
     </header>
   );
 };
 
-export default Navbar;

@@ -49,7 +49,7 @@ const Error = ({ error, reset }: ErrorProps) => {
             type="button"
             variant="primary"
             size="md"
-            onClick={reset}
+            onClick={() => window.location.reload()}
           >
             <RefreshCw size={16} />
             Try again

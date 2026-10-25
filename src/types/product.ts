@@ -38,7 +38,7 @@ export interface ProductResponse{
     limit:number;
 }
 
-export type SortBy = "name" | "price" | "createdat";
+export type SortBy = "title" | "price" | "createdat";
 export type SortDirection = "ascending" | "descending";
 
 export type ProductCategory = string | "all";

@@ -9,13 +9,14 @@ export default function DashboardShell({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
+      <Navbar isAuthenticated={true}/>
       <div className="flex min-h-[calc(100vh-4rem)]">
         {/* Mobile backdrop */}
         {isMobileOpen && (

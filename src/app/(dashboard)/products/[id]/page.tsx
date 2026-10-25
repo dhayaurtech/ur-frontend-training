@@ -11,10 +11,11 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-import { fetchProducts } from "@/services/productService";
+import { getProduct, getProducts } from "@/lib/services/products";
 import { formatPrice } from "@/lib/formatPrice";
 import Badge from "@/components/ui/Badge";
 import ProductImageGallery from "@/components/products/ProductImageGallery";
+import { ApiError } from "@/lib/api-client";
 
 
 type ProductDetailsPageProps = {
@@ -23,32 +24,67 @@ type ProductDetailsPageProps = {
 
 export async function generateMetadata({params}:ProductDetailsPageProps):Promise<Metadata>{
     const {id} = await params;
-    const products = await fetchProducts();
-    const product = products.find((prod) => prod.id === Number(id));
+    const productId = Number(id);
 
-    if(!product){
-        return {
-            title: "Product Not Found | ShopDesk"
-        }
+    if(!Number.isInteger(productId) || productId<=0){
+      return {
+        title:"Product Not Found | ShopDesk" 
+      }
     }
 
-    return {
-        title : `${product.title} | ShopDesk`,
-        description : product.description
+    try {
+      const product = await getProduct(productId);
+      return {
+        title:`${product.title} | ShopDesk`,
+        description:product.description
+      }
+    } catch (error) {
+      return{
+        title:'Product Not Found | ShopDesk'
+      }
     }
+    // const products = await getProducts();
+    // const product = products.find((prod) => prod.id === Number(id));
+
+    // if(!product){
+    //     return {
+    //         title: "Product Not Found | ShopDesk"
+    //     }
+    // }
+
+    // return {
+    //     title : `${product.title} | ShopDesk`,
+    //     description : product.description
+    // }
 }
 
 const ProductDetailsPage = async ({
   params,
 }: ProductDetailsPageProps) => {
   const { id } = await params;
-  const products = await fetchProducts();
+  const productId = Number(id);
 
-  const product = products.find((prod) => prod.id === Number(id));
-
-  if (!product) {
+  if(!Number.isInteger(productId) || productId<=0){
     notFound();
   }
+
+  let product;
+
+  try {
+    product = await getProduct(productId);
+  } catch (error) {
+    if(error instanceof ApiError && error.status === 404){
+      notFound();
+    }
+    throw error;
+  }
+  // const products = await fetchProducts();
+
+  // const product = products.find((prod) => prod.id === Number(id));
+
+  // if (!product) {
+  //   notFound();
+  // }
 
   const stockStatus =
     product.stock <= 0

@@ -3,7 +3,6 @@ import { formatPrice } from "@/lib/formatPrice";
 import { Image as ImageIcon, Package } from "lucide-react";
 import Badge from "../ui/Badge";
 import Link from "next/link";
-import Image from "next/image";
 
 type ProductCardProps = {
   product: Product;
@@ -18,13 +17,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
       {/* Product image */}
       <div className="relative flex h-48 items-center justify-center overflow-hidden bg-gray-50 p-4">
         {product.thumbnail ? (
-          <Image
-            width={200}
-            height={200}
+          <img
             src={product.thumbnail}
             alt={product.title}
             loading="lazy"
-            className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110 hover:rotate-3"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110 hover:rotate-3"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-gray-300">

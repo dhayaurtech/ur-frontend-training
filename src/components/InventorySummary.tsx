@@ -1,3 +1,4 @@
+
 "use client";
 
 import { getInventorySummary } from "@/lib/products";
@@ -14,6 +15,9 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { deleteProduct } from "@/lib/services/products";
+import { useState } from "react";
+import Button from "./ui/Button";
 
 type InventorySummaryProps = {
   products: Product[];
@@ -39,7 +43,28 @@ const statsStyles = [
 ];
 
 const InventorySummary = ({ products }: InventorySummaryProps) => {
-  const summary = getInventorySummary(products);
+  const [currentProducts, setCurrentProducts] = useState(products);
+  const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [selectId, setSelectId] = useState<number | null>(null)
+const summary = getInventorySummary(currentProducts);
+
+const handleDelete = async() => {
+  try {
+    if(selectId!==null){
+    await deleteProduct(selectId);
+
+    setCurrentProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== selectId)
+    );
+    setShowModal(false);
+    setSelectId(null);
+    setShowToast(true);
+  }
+  } catch (error) {
+    console.error("Failed to delete product : ",error);
+  }
+}
 
   const stats = [
     {
@@ -106,9 +131,10 @@ const InventorySummary = ({ products }: InventorySummaryProps) => {
           );
         })}
       </section>
-
+      
       {/* Recent products */}
       <Card className="overflow-hidden border border-gray-200 bg-white p-0 shadow-sm">
+        
         <div className="flex flex-col justify-between gap-3 border-b border-gray-100 px-5 py-5 sm:flex-row sm:items-center sm:px-6">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -123,7 +149,7 @@ const InventorySummary = ({ products }: InventorySummaryProps) => {
             {products.length} products
           </span>
         </div>
-
+      
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
@@ -138,13 +164,13 @@ const InventorySummary = ({ products }: InventorySummaryProps) => {
                   Price
                 </th>
                 <th scope="col" className="px-6 py-4 text-right font-semibold">
-                  Action
+                  Actions
                 </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-gray-100">
-              {products.slice(0, 10).map((prod) => (
+              {currentProducts.slice(0, 10).map((prod) => (
                 <tr
                   key={prod.id}
                   className="transition-colors hover:bg-violet-50/40"
@@ -178,12 +204,17 @@ const InventorySummary = ({ products }: InventorySummaryProps) => {
                   <td className="px-6 py-4 text-right font-semibold tabular-nums text-gray-900">
                     {formatPrice(prod.price)}
                   </td>
-                  <td className="px-6 py-4 text-right font-semibold tabular-nums text-gray-900">
-                    <Link href={`/products/edit/${prod.id}`}>Edit</Link>
+                  <td className="flex gap-1 px-6 py-4 text-right font-semibold tabular-nums text-gray-900">
+                    <Link href={`/products/edit/${prod.id}`}>
+                    <Button variant="primary" size="sm">Edit</Button>
+                    </Link>
+                    <Button variant="danger" size="sm" onClick={() => {setShowModal(true); setSelectId(prod.id);}}>Delete</Button>
                   </td>
+                  
                 </tr>
+                
               ))}
-
+              
               {products.length === 0 && (
                 <tr>
                   <td colSpan={3} className="px-6 py-12 text-center">
@@ -205,14 +236,46 @@ const InventorySummary = ({ products }: InventorySummaryProps) => {
           </table>
         </div>
 
-        {products.length > 10 && (
+        {products.length > 20 && (
           <div className="border-t border-gray-100 px-6 py-3">
             <p className="text-xs text-gray-500">
               Showing the first 10 products out of {products.length}.
             </p>
           </div>
         )}
+        
       </Card>
+      {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-xl">
+              <p className="text-lg font-semibold text-gray-900">
+                Are you sure? 
+              </p>
+              <p className="text-center text-gray-600">
+                Do you want to delete this product?
+              </p>
+              <div className="flex gap-3">
+                <Button variant="secondary" onClick={()=> setShowModal(false)}>Cancel</Button>
+                <Button variant="danger" onClick={handleDelete}>Confirm</Button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showToast && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-xl">
+              <p className="text-green-500">
+                <CircleCheck className="w-15 h-15"/>
+              </p>
+              <p className="text-lg font-semibold text-gray-900">
+                Product Deleted Successfully
+              </p>
+              <div className="flex gap-3">
+                <Button variant="primary" onClick={()=> setShowToast(false)}>Ok</Button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

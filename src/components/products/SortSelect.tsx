@@ -27,11 +27,11 @@ const SortSelect = ({
 
   const OptionValues = [
     {
-      optionVal:"name-ascending",
+      optionVal:"title-ascending",
       text:"Name : A to Z"
     },
     {
-      optionVal:"name-descending",
+      optionVal:"title-descending",
       text:"Name : Z to A"
     },
     {

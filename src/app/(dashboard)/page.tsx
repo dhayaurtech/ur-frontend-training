@@ -2,14 +2,29 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Package, ArrowRight, Plus } from "lucide-react";
 import InventorySummary from "@/components/InventorySummary";
-import { fetchProducts } from "@/services/productService";
+import { getProducts, getCategories } from "@/lib/services/products";
+import { cookies } from "next/headers";
 
 export const metadata:Metadata = {
   title: "Dashboard | ShopDesk",
   description: "Manage Inventory"
 }
 export default async function Home() {
-  const products = await fetchProducts();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  console.log("Dashboard received access token:", Boolean(token));
+
+  const requestOptions:RequestInit = token ? {
+    headers:{
+      cookie:`accessToken=${token}`,
+    }
+  }:{};
+  const [result, categories] = await Promise.all([
+    getProducts({page:1,limit:100},requestOptions),
+    getCategories(requestOptions)
+  ])
+
+  const products = result.items;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">

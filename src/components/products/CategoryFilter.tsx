@@ -1,24 +1,24 @@
 "use client";
 
 import { X, ChevronDown } from "lucide-react";
-import type { Product, ProductCategory } from "@/types/product";
+import type {ProductCategory } from "@/types/product";
 import Select from "../ui/Select";
 import Option from "../ui/Option";
 
 type CategoryType = {
-  products: Product[];
+  categories: string[];
   category: string;
   onCategoryChange: (value: string) => void;
 };
 
 const CategoryFilter = ({
-  products,
+  categories:allCategories,
   category,
   onCategoryChange,
 }: CategoryType) => {
-  const categories: ProductCategory[] = [
+  const categoryOptions = [
     "all",
-    ...new Set(products.map((prod) => prod.category)),
+    ...allCategories.filter((cat) => cat.toLowerCase()!=="all"),
   ];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -45,7 +45,7 @@ const CategoryFilter = ({
           onChange={handleChange}
           className="min-w-36 capitalize"
         >
-          {categories.map((cat) => (
+          {categoryOptions.map((cat) => (
             <Option key={cat} value={cat}>
               {cat === "all" ? "All categories" : cat}
             </Option>
