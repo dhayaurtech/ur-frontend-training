@@ -1,11 +1,16 @@
-"use client"
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import LoginForm from "@/components/users/LoginForm";
 
-const LoginPage = () => {
+export default async function LoginPage() {
+  const cookieStore = await cookies();
+  const accessToken = await cookieStore.get('accessToken')?.value;
+
+  if(accessToken){
+    redirect('/');
+  }
+  
   return (
-    <div>
-      Login
-    </div>
-  )
+    <LoginForm/>
+  );
 }
-
-export default LoginPage

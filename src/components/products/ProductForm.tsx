@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type {
   Product,
   ProductBrand,
@@ -9,6 +10,63 @@ import type {
 import Select from "@/components/ui/Select";
 import Option from "@/components/ui/Option";
 import { X } from "lucide-react";
+import { createProduct, updateProduct, uploadProductImage } from "@/lib/services/products";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Input from "../ui/Input";
+
+const formSchema = z.object({
+  title: z.string().trim().min(1, "Name field is required"),
+  category: z.string().trim().min(1, "Category field is required"),
+  brand: z.string().trim().min(1, "Brand field is required"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description field is required"),
+  price: z
+    .string()
+    .trim()
+    .min(1, "Price field is required")
+    .refine(
+      (value) =>
+        Number.isFinite(Number(value)) && Number(value) > 0,
+      "Price should be a positive number"
+    )
+    .transform(Number),
+  stock: z
+    .string()
+    .trim()
+    .min(1, "Stock field is required")
+    .refine(
+      (value) =>
+        Number.isInteger(Number(value)) && Number(value) >= 0,
+      "Stock must be a non-negative integer"
+    )
+    .transform(Number),
+  images: z
+  .unknown()
+  .transform((value) => {
+    if (value instanceof FileList) {
+      return Array.from(value);
+    }
+
+    return Array.isArray(value) ? value : [];
+  })
+  .pipe(
+    z.array(
+      z
+        .file()
+        .max(5 * 1024 * 1024, "Each image must be 5 MB or smaller")
+        .mime(
+          ["image/jpeg", "image/png", "image/webp"],
+          "Only JPG, PNG, and WebP images are allowed"
+        )
+    )
+  ),
+});
+
 
 type ProductFormProps = {
   products: Product[];
@@ -16,21 +74,15 @@ type ProductFormProps = {
   productId?: string;
 };
 
-type ProductFormData = {
-  title: string;
-  category: string;
-  description: string;
-  price: string;
-  stock: string;
-  brand: string;
-  images: File[];
-};
+type ProductFormInput = z.input<typeof formSchema>;
+type ProductFormOutput = z.output<typeof formSchema>;
 
 const ProductForm = ({
   products,
   mode,
   productId,
 }: ProductFormProps) => {
+  const router = useRouter();
   const product =
     mode === "edit"
       ? products.find((prod) => prod.id === Number(productId))
@@ -47,80 +99,67 @@ const ProductForm = ({
   const [existingImages, setExistingImages] = useState<string[]>(
     product?.images ?? []
   );
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [error,setError] = useState("");
 
-  const [formData, setFormData] = useState<ProductFormData>({
-    title: product?.title ?? "",
-    category: product?.category ?? "",
-    description: product?.description ?? "",
-    price: String(product?.price ?? ""),
-    stock: String(product?.stock ?? ""),
-    brand: product?.brand ?? "",
-    images: [],
-  });
+  const {register, handleSubmit, setValue, formState:{errors, isSubmitting}} = useForm<ProductFormInput, unknown, ProductFormOutput>({
+    resolver:zodResolver(formSchema),
+    mode:'onTouched',
+    defaultValues:{
+      title:product?.title ?? "",
+      category:product?.category ?? "",
+      brand:product?.brand ?? "",
+      description:product?.description ?? "",
+      price:String(product?.price ?? ""),
+      stock:String(product?.stock ?? ""),
+      images:[]
+    }
+  })
+  const imagesRegistration = register("images");
+     const removeImage = (idx:number) => {
+      const updatedImages = selectedImages.filter((_,imageIndex) => imageIndex!==idx);
+      setSelectedImages(updatedImages);
+      setValue("images",updatedImages,{shouldValidate:true,shouldTouch:true})
+     }
+      const onSubmit = async (data:ProductFormOutput) => {
+        console.log("Form images:", data.images);
+console.log("Selected images:", selectedImages);
+        const uploadedImages = await Promise.all(
+          data.images.map((file) => uploadProductImage(file))
+        )
 
-      const [titleError , setTitleError] = useState<string>("");
-      const [categoryError , setCategoryError] = useState<string>("");
-      const [descriptionError , setDescriptionError] = useState<string>("");
-      const [priceError , setPriceError] = useState<string>("");
-      const [stockError, setStockError] = useState<string>("");
-      const [brandError, setBrandError] = useState<string>("");
-      const [imagesError, setImagesError] = useState<string>("");
-
-      const handleChange = (e:React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-
-        setFormData((prev) => ({
-          ...prev,[name]:value
-        }))
-      }
-
-      const removeImage = (index:number) => {
-        setFormData((prev) => ({
-          ...prev,
-          images:prev.images.filter((_,idx) => idx !== index)
-        }))
-      }
-
-      const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        const titleErr = formData.title.trim() === "" ? "Name field is required" : "";
-        const categoryErr = formData.category.trim() === "" ? "Category field is required" : "";
-        const brandErr = formData.brand.trim() === "" ? "Brand field is required" : "";
-        const descriptionErr = formData.description.trim() === "" ? "Description field is required" : "";
-        const priceErr = formData.price.trim() === "" ? "Price field is required" : (Number(formData.price) < 0) ? "Price should be a positive value" : ""
-        const stockErr = formData.stock.trim() === "" ? "Stock field is required" : (Number.isInteger(Number(formData.stock)) && Number(formData.stock) > 0) ? "" : "Stock should be natural number";
-        const imgErr = existingImages.length + formData.images.length === 0 ? "Atleast one image should be added" : "";
-
-        setTitleError(titleErr);
-        setCategoryError(categoryErr);
-        setBrandError(brandErr);
-        setDescriptionError(descriptionErr);
-        setPriceError(priceErr);
-        setStockError(stockErr);
-        setImagesError(imgErr);
-
-        const hasError = [titleErr, categoryErr, brandErr, descriptionErr, priceErr, stockErr, imgErr].some((error) => error!=="")
-
-        if(hasError) return;
-    
+console.log("Uploaded image URLs:", uploadedImages);
+        console.log("Uploaded image URLs:", uploadedImages);
         const submittedProduct = {
-          ...formData,
-          price: Number(formData.price),
-          stock: Number(formData.stock),
-          existingImages
+          title:data.title,
+          category:data.category,
+          brand:data.brand,
+          description:data.description,
+          price:data.price,
+          stock:data.stock,
+          images:[...existingImages,...uploadedImages]
         };
-    
-        mode === "add" ? console.log("New Product : ",{...submittedProduct}) : console.log("Edit Product : ",{...submittedProduct,productId:productId})
-        setFormData({
-          title: submittedProduct.title,
-          category: submittedProduct.category,
-          description: submittedProduct.description,
-          price: String(submittedProduct.price),
-          stock: String(submittedProduct.stock),
-          brand: submittedProduct.brand,
-          images: submittedProduct.images,
-        })
+
+        const newImages = data.images;
+        console.log("Product data:", submittedProduct);
+        console.log("New image files:", newImages); 
+
+        try {
+          if(mode === "add"){
+            await createProduct(submittedProduct);
+          }else if(productId){
+            await updateProduct(Number(productId),submittedProduct);
+          }
+          router.push("/products");
+          router.refresh();
+        } catch (error) {
+
+  if (error instanceof Error) {
+    setError(error.message);
+  } else {
+    setError("Something went wrong while saving the product.");
+  }
+}
 
       };
 
@@ -137,8 +176,9 @@ const ProductForm = ({
           {mode === "add" ? "Add the product in your store inventory." : "Edit the product in your store inventory."}
         </p>
       </div>
+      {error && <div className="bg-red-500 border-4 border-red-600 text-white p-2 my-5 rounded-2xl flex justify-between shadow-2xl shadow-zinc-500">{error} <X className="cursor-pointer hover:zoom-90" onClick={() => setError("")}/></div>}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="space-y-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8"
       >
         {/* Basic information */}
@@ -161,17 +201,8 @@ const ProductForm = ({
               >
                 Product Name
               </label>
-
-              <input
-                id="title"
-                name="title"
-                type="text"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Enter product name"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
-              />
-              {titleError && <p className="text-red-500">{titleError}</p>}
+              <Input id="title" {...register('title')} placeholder="Enter product name"/>
+              {errors.title && <p className="text-red-500">{errors.title.message}</p>}
             </div>
 
             {/* Category */}
@@ -182,11 +213,9 @@ const ProductForm = ({
               >
                 Category
               </label>
-
               <Select
-                value={formData.category}
-                onChange={handleChange}
-                name="category"
+               {...register('category')}
+               name='category'
               >
                 {mode === "add" && <Option value="">Select Category</Option>}
                 {categories.map((cat) => (
@@ -195,7 +224,7 @@ const ProductForm = ({
                   </Option>
                 ))}
               </Select>
-              {categoryError && <p className="text-red-500">{categoryError}</p>}
+              {errors.category && <p className="text-red-500 font-mono">{errors.category.message}</p>}
             </div>
 
             {/* Brand */}
@@ -206,10 +235,8 @@ const ProductForm = ({
               >
                 Brand
               </label>
-
               <Select
-                value={formData.brand}
-                onChange={handleChange}
+                {...register('brand')}
                 name="brand"
               >
                 { mode === "add" && <Option value="">Select Brand</Option>}
@@ -219,7 +246,7 @@ const ProductForm = ({
                   </Option>
                 ))}
               </Select>
-              {brandError && <p className="text-red-500">{brandError}</p>}
+              {errors.brand && <p className="text-red-500 font-mono">{errors.brand.message}</p>}
             </div>
 
             {/* Description */}
@@ -230,19 +257,8 @@ const ProductForm = ({
               >
                 Description
               </label>
-
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Describe the product..."
-                className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
-              />
-              {descriptionError && (
-                <p className="text-red-500">{descriptionError}</p>
-              )}
+              <textarea id='description' {...register('description')} placeholder="Describe the product" rows={4} className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"/>
+              {errors.description && <p className="text-red-500 font-mono">{errors.description.message}</p>}
             </div>
           </div>
         </section>
@@ -267,17 +283,9 @@ const ProductForm = ({
               >
                 Price (₹)
               </label>
-
-              <input
-                id="price"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="0.00"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
-              />
-              {priceError && <p className="text-red-500">{priceError}</p>}
+              <Input id='price' {...register('price')} placeholder="0.00"/>
+              {errors.price && <p className="text-red-500 font-mono">{errors.price.message}</p>}
+             
             </div>
 
             {/* Stock */}
@@ -288,17 +296,10 @@ const ProductForm = ({
               >
                 Stock Quantity
               </label>
-
-              <input
-                id="stock"
-                name="stock"
-                type="number"
-                value={formData.stock}
-                onChange={handleChange}
-                placeholder="0"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-violet-500 focus:ring-4 focus:ring-violet-100"
-              />
-              {stockError && <p className="text-red-500">{stockError}</p>}
+              
+              <Input id='stock' {...register('stock')} placeholder="0.00"/>
+              {errors.stock && <p className="text-red-500 font-mono">{errors.stock.message}</p>}
+              
             </div>
           </div>
         </section>
@@ -344,24 +345,24 @@ const ProductForm = ({
                 Select image files from your device
               </span>
             </label>
-
+            
             <input
-              id="images"
-              name="images"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) =>{
-                const newFiles = Array.from(e.target.files ?? []);
-                setFormData((prev) => ({
-                  ...prev,
-                  images: [...prev.images,...newFiles],
-                }))
-                e.target.value = ""
-              }
-              }
-              className="sr-only"
-            />
+  id="images"
+  type="file"
+  name={imagesRegistration.name}
+  ref={imagesRegistration.ref}
+  onBlur={imagesRegistration.onBlur}
+  accept="image/jpeg,image/png,image/webp"
+  multiple
+  onChange={(e) => {
+    const files = Array.from(e.target.files ?? []);
+
+    setSelectedImages(files);
+
+    imagesRegistration.onChange(e);
+  }}
+/>
+            
             <div className="mt-4 flex flex-wrap gap-4">
               {existingImages.map((url, index) => (
                 <div key={`existing-${index}`} className="h-24 w-24">
@@ -369,45 +370,29 @@ const ProductForm = ({
                 </div>
                 
               ))}
-                {formData.images.map((file, index) => (
-                  <div key={`${file.name}-${index}`} className="relative flex flex-col items-center h-24 w-24">
+                {selectedImages.map((file, index) => (
+                  <div className="relative flex flex-col items-center h-24 w-24" key={`${file.name}-${index}`}>
                     <img
-                      src={URL.createObjectURL(file)}
-                      alt={file.name}
+                     src={URL.createObjectURL(file)}
+                     alt={file.name}
                       className="h-full w-full rounded-lg object-cover border-4 p-2"
                     />
-                    <button type="button" onClick={() => removeImage(index)} aria-label={`Remove ${file.name}`} className="text-red-500 rounded-full absolute  -top-2 -right-2 hover:bg-red-400 hover:text-white">
+                    <button type="button" onClick={() => removeImage(index)} className="text-red-500 rounded-full absolute  -top-2 -right-2 hover:bg-red-400 hover:text-white">
                       <X className="size-4"/>
                     </button>
                   </div>
-                ))}
+                 ))} 
             </div>
           </div>
-          {imagesError && <p className="text-red-500">{imagesError}</p>}
+          {errors.images && <p className="text-red-500">{errors.images.message}</p>}
+          {/* {imagesError && <p className="text-red-500">{imagesError}</p>} */}
         </section>
 
         {/* Actions */}
         <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={() =>
-              setFormData({
-                title: "",
-                category: "",
-                description: "",
-                price: "",
-                stock: "",
-                brand: "",
-                images: [],
-              })
-            }
-            className="rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-          >
-            Reset
-          </button>
 
           <button
-            type="submit"
+            type="submit" disabled={isSubmitting}
             className="rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus:outline-none focus:ring-4 focus:ring-violet-200"
           >
             {mode === "add" ? "Add Product" : "Edit Product"}
