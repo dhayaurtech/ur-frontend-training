@@ -1,8 +1,6 @@
 import ProductForm from '@/components/products/ProductForm';
 import { getProducts } from '@/lib/services/products';
 import { cookies } from 'next/headers';
-// import { fetchProducts } from '@/services/productService'
-
 
 const AddProductPage = async() => {
     const cookieStore = await cookies();

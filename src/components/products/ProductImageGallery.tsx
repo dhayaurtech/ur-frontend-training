@@ -40,11 +40,11 @@ export default function ProductImageGallery({
   return (
     <div>
       {/* Main image */}
-      <div className="group relative flex h-72 items-center justify-center overflow-hidden rounded-xl bg-gray-50 p-5 sm:h-96">
+      <div className="group relative flex h-72 items-center justify-center overflow-hidden rounded-xl bg-gray-50 sm:h-96">
         <img
           src={validImages[activeIndex]}
           alt={`${title} - image ${activeIndex + 1}`}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-fill"
         />
 
         {validImages.length > 1 && (
@@ -84,7 +84,7 @@ export default function ProductImageGallery({
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Show image ${index + 1}`}
                 aria-pressed={activeIndex === index}
-                className={`flex h-20 w-20 items-center justify-center rounded-xl border-2 bg-gray-50 p-2 transition ${
+                className={`flex h-20 w-20 items-center justify-center rounded-xl border-2 bg-gray-50 transition ${
                   activeIndex === index
                     ? "border-violet-500 ring-2 ring-violet-100"
                     : "border-gray-200 hover:border-violet-300"
@@ -93,7 +93,7 @@ export default function ProductImageGallery({
                 <img
                   src={image}
                   alt=""
-                  className="h-full w-full object-contain"
+                  className="h-full w-full object-fill rounded-xl"
                 />
               </button>
             </li>

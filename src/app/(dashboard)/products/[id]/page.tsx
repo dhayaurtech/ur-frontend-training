@@ -43,19 +43,6 @@ export async function generateMetadata({params}:ProductDetailsPageProps):Promise
         title:'Product Not Found | ShopDesk'
       }
     }
-    // const products = await getProducts();
-    // const product = products.find((prod) => prod.id === Number(id));
-
-    // if(!product){
-    //     return {
-    //         title: "Product Not Found | ShopDesk"
-    //     }
-    // }
-
-    // return {
-    //     title : `${product.title} | ShopDesk`,
-    //     description : product.description
-    // }
 }
 
 const ProductDetailsPage = async ({
@@ -78,13 +65,6 @@ const ProductDetailsPage = async ({
     }
     throw error;
   }
-  // const products = await fetchProducts();
-
-  // const product = products.find((prod) => prod.id === Number(id));
-
-  // if (!product) {
-  //   notFound();
-  // }
 
   const stockStatus =
     product.stock <= 0

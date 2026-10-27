@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { getCategories, getProducts } from "@/lib/services/products";
 import ProductList from "@/components/products/ProductList";
 import Navbar from "@/components/Navbar";
@@ -18,7 +17,7 @@ const PublicProductPage = async ({searchParams}:ProductsPageProps) => {
   const category = params.category || "all";
   const search = params.search || "";
   const sort = params.sort || "title-ascending";
-  const limit = 10;
+  const limit = 12;
 
   const [result,categories] = await Promise.all([
     getProducts({page,limit,search,category,sort}),
@@ -26,7 +25,7 @@ const PublicProductPage = async ({searchParams}:ProductsPageProps) => {
   ])
   return (
     <>
-    <Navbar isAuthenticated={false}/>
+    <Navbar isAuthenticated={true}/>
     <div className="min-h-screen bg-gray-50">
       <ProductList products={result.items} initialQuery={search} total={result.total} currentPage={result.page} limit={result.limit} initialCategory={category} initialSort={sort} categories={categories}/>
     </div>

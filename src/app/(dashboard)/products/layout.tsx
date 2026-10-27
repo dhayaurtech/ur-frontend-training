@@ -1,6 +1,4 @@
-
-import Navbar from '@/components/Navbar';
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 
 const ProductLayout = ({children}:Readonly<{children:ReactNode}>) => {
   return (

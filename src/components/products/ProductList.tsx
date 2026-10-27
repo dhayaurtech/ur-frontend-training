@@ -93,16 +93,15 @@ const ProductList = ({ products, initialQuery, total, currentPage, limit, initia
  const searchResult = products;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-3">
+    <div className="mx-auto  max-w-screen space-y-6 px-25 py-15 bg-violet-100">
       {/* Page heading */}
       <section>
-        <p className="mb-2 text-sm font-medium text-violet-600">Inventory</p>
 
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-violet-900 sm:text-3xl">
           Products
         </h1>
 
-        <p className="mt-2 text-sm text-gray-500 sm:text-base">
+        <p className="mt-2 text-sm text-violet-500 sm:text-base">
           Manage your products, categories, and pricing.
         </p>
       </section>
@@ -110,7 +109,7 @@ const ProductList = ({ products, initialQuery, total, currentPage, limit, initia
       {/* Search, Filters and sorting */}
       <section
         aria-label="Product filters"
-        className="flex flex-col items-center justify-around rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col items-center justify-around rounded-2xl border border-violet-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="min-w-0 flex-1">
           <SearchBar query={query} onQueryChange={setQuery} />
@@ -135,23 +134,23 @@ const ProductList = ({ products, initialQuery, total, currentPage, limit, initia
 
       {/* Results count */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Showing{" "}
-          <span className="font-semibold text-gray-900">
+        <p className="text-sm text-violet-400">
+          Showing Page{" "} 
+          <span className="font-semibold text-violet-900">
             {total === 0 ? 0 : (currentPage-1)*limit+1}
-          </span>{" "}
-          <span className="font-semibold text-gray-900">
+          </span>{" : "}
+          <span className="font-semibold text-violet-900">
             {Math.min(currentPage*limit,total)}
           </span>
-          of{" "}
-          <span className="font-semibold text-gray-900">{total}</span>{" "}
+          {" "}of{" "}
+          <span className="font-semibold text-violet-900">{total}</span>{" "}
           products
         </p>
       </div>
 
       {/* Product grid or empty state */}
       {searchResult.length > 0 ? (
-        <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <ul className="grid grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {searchResult.map((prod) => (
             <li key={prod.id} className="min-w-0">
               <ProductCard product={prod} />
@@ -184,12 +183,12 @@ const ProductList = ({ products, initialQuery, total, currentPage, limit, initia
         scroll: false,
       });
     }}
-    className="rounded-lg border-3 border-violet-500 text-violet-500 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+    className="rounded-lg border-violet-400 bg-violet-500 text-white px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
   >
     Previous
   </button>
 
-  <p className="text-sm text-gray-500">
+  <p className="text-sm text-violet-500">
     Page {currentPage} of {Math.max(1, Math.ceil(total / limit))}
   </p>
 
@@ -203,7 +202,7 @@ const ProductList = ({ products, initialQuery, total, currentPage, limit, initia
         scroll: false,
       });
     }}
-    className="rounded-lg border-2 border-violet-500 text-violet-500 px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+    className="rounded-lg border-violet-400 bg-violet-500 text-white px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40"
   >
     Next
   </button>

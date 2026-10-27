@@ -9,7 +9,7 @@ type NavbarProps = {
   isAuthenticated:boolean;
 }
 
-export default function Navbar({isAuthenticated = true}:NavbarProps){
+export default function Navbar({isAuthenticated}:NavbarProps){
   const router = useRouter();
   type User = {
   name: string;
@@ -74,7 +74,7 @@ useEffect(() => {
           <div className="hidden h-8 w-px bg-gray-200 sm:block" />
 
           <div className="flex items-center gap-2">
-            {isAuthenticated ? (
+            {user && isAuthenticated ? (
             <button
               type="button"
               onClick={handleLogout}

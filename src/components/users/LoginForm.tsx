@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Input from "../ui/Input";
 import { apiClient, ApiError } from "@/lib/api-client";
-import { X } from "lucide-react";
+import { X, Eye, EyeClosed } from "lucide-react";
 
 const loginSchema = z.object({
     email:z.string().trim().min(1,"Email is required").email("Invalid email"),
@@ -76,21 +76,16 @@ const onSubmit = async(data:LoginFormData) => {
     if(error instanceof Error){
       setError(error.message)
     }
-
-    console.error("Login failed");
   }
 }
 
   return (
     <main className="flex min-h-screen flex-col bg-white lg:flex-row">
-      {/* Left side */}
-      <section className="relative flex min-h-[380px] w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-violet-950 via-violet-800 to-purple-600 px-7 py-8 text-white sm:px-12 sm:py-10 lg:min-h-screen lg:w-1/2 lg:px-16 lg:py-14">
-        {/* Decorative circles */}
+      <section className="relative flex min-h-85 w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-violet-950 via-violet-800 to-purple-600 px-7 py-8 text-white sm:px-12 sm:py-10 lg:min-h-screen lg:w-1/2 lg:px-16 lg:py-14">
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full border border-white/10" />
         <div className="absolute -right-10 -top-10 h-52 w-52 rounded-full border border-white/10" />
         <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-purple-400/20 blur-3xl" />
 
-        {/* Logo */}
         <div className="relative z-10 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-2xl font-black text-violet-800 shadow-lg">
             S
@@ -100,12 +95,7 @@ const onSubmit = async(data:LoginFormData) => {
           </span>
         </div>
 
-        {/* Animated text */}
         <div className="relative z-10 my-12 max-w-xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-100 backdrop-blur-sm">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
-            Your shopping workspace
-          </span>
 
           <h1 className="mt-8 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl xl:text-6xl">
             Discover more.
@@ -115,10 +105,9 @@ const onSubmit = async(data:LoginFormData) => {
 
           <div className="mt-7 min-h-20 text-lg leading-8 text-violet-100 sm:text-xl">
             <p>{displayText}</p>
-            <span className="mt-1 inline-block h-6 w-0.5 animate-pulse bg-violet-200" />
+
           </div>
 
-          {/* Feature highlights */}
           <div className="mt-8 flex flex-wrap gap-3">
             <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/90">
               Product discovery
@@ -132,12 +121,8 @@ const onSubmit = async(data:LoginFormData) => {
           </div>
         </div>
 
-        <p className="relative z-10 text-xs text-violet-200/70">
-          © 2026 ShopDesk. All rights reserved.
-        </p>
       </section>
 
-      {/* Right side */}
       <section className="flex w-full items-center justify-center bg-violet-100 px-6 py-12 sm:px-12 lg:min-h-screen lg:w-1/2 lg:bg-white lg:px-16">
         <div className="w-full max-w-md">
           <div className="mb-8">
@@ -155,14 +140,14 @@ const onSubmit = async(data:LoginFormData) => {
           </div>
           {error && <div className="bg-red-500 border-4 border-red-600 text-white p-2 my-5 rounded-2xl flex justify-between shadow-2xl shadow-zinc-500">{error} <X className="cursor-pointer hover:zoom-90" onClick={() => setError("")}/></div>}
           <form
-            className="space-y-5"
+            className="space-y-8 border-4 border-violet-300 rounded-2xl p-10 bg-violet-200 drop-shadow-lg"
             onSubmit={handleSubmit(onSubmit)}
           >
-            {/* Email */}
+            <h1 className="text-center text-violet-500 font-extrabold text-3xl text-shadow-lg text-shadow-violet-300 animate-pulse font-mono">Login</h1>
             <div>
               <label
                 htmlFor="email"
-                className="mb-2 block text-sm font-semibold text-gray-700"
+                className="mb-2 block text-sm font-semibold text-violet-700 font-mono"
               >
                 Email address
               </label>
@@ -171,22 +156,14 @@ const onSubmit = async(data:LoginFormData) => {
 
             </div>
 
-            {/* Password */}
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <label
                   htmlFor="password"
-                  className="text-sm font-semibold text-gray-700"
+                  className="text-sm font-semibold text-violet-700 font-mono"
                 >
                   Password
                 </label>
-
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-violet-600 transition hover:text-violet-800"
-                >
-                  Forgot password?
-                </button>
               </div>
 
               <div className="relative">
@@ -198,30 +175,14 @@ const onSubmit = async(data:LoginFormData) => {
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="absolute inset-y-0 right-4 text-xs font-semibold text-violet-600 hover:text-violet-800"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? <Eye/> : <EyeClosed/>}
                 </button>
 
               </div>
               {errors.password && <p className="text-red-500 font-mono">{errors.password.message}</p>}
             </div>
 
-            {/* Remember me */}
-            <div className="flex items-center gap-2">
-              <input
-                id="remember"
-                name="remember"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 accent-violet-600 focus:ring-violet-500"
-              />
-              <label
-                htmlFor="remember"
-                className="text-sm text-gray-600"
-              >
-                Remember me
-              </label>
-            </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -234,17 +195,6 @@ const onSubmit = async(data:LoginFormData) => {
             </button>
           </form>
 
-          <div className="my-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-medium tracking-widest text-gray-400">
-              SHOP SMARTER
-            </span>
-            <div className="h-px flex-1 bg-gray-200" />
-          </div>
-
-          <p className="text-center text-xs leading-6 text-gray-500">
-            Secure access to your ShopDesk workspace.
-          </p>
         </div>
       </section>
     </main>

@@ -12,7 +12,6 @@ export const metadata:Metadata = {
 export default async function Home() {
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
-  console.log("Dashboard received access token:", Boolean(token));
 
   const requestOptions:RequestInit = token ? {
     headers:{
@@ -28,7 +27,6 @@ export default async function Home() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      {/* Welcome header */}
       <section className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <p className="mb-2 text-sm font-medium text-violet-600">
@@ -54,7 +52,6 @@ export default async function Home() {
         </Link>
       </section>
 
-      {/* Inventory section */}
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <div className="rounded-lg bg-violet-100 p-2 text-violet-700">

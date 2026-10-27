@@ -1,6 +1,5 @@
 import ProductForm from '@/components/products/ProductForm'
-import { getCategories, getProducts } from '@/lib/services/products'
-import { fetchProducts } from '@/services/productService'
+import { getProducts } from '@/lib/services/products'
 import { cookies } from 'next/headers'
 
 type EditProductPageProps = {

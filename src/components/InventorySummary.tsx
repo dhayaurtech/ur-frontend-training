@@ -14,10 +14,9 @@ import {
   ArrowUpRight,
   Image as ImageIcon,
 } from "lucide-react";
-import Link from "next/link";
-import { deleteProduct } from "@/lib/services/products";
 import { useState } from "react";
-import Button from "./ui/Button";
+import { Column } from "./ui/data-table/data-table.types";
+import DataTable from "./ui/data-table/DataTable";
 
 type InventorySummaryProps = {
   products: Product[];
@@ -44,27 +43,8 @@ const statsStyles = [
 
 const InventorySummary = ({ products }: InventorySummaryProps) => {
   const [currentProducts, setCurrentProducts] = useState(products);
-  const [showModal, setShowModal] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [selectId, setSelectId] = useState<number | null>(null)
-const summary = getInventorySummary(currentProducts);
-
-const handleDelete = async() => {
-  try {
-    if(selectId!==null){
-    await deleteProduct(selectId);
-
-    setCurrentProducts((prevProducts) =>
-      prevProducts.filter((product) => product.id !== selectId)
-    );
-    setShowModal(false);
-    setSelectId(null);
-    setShowToast(true);
-  }
-  } catch (error) {
-    console.error("Failed to delete product : ",error);
-  }
-}
+  const tableProducts = currentProducts.slice(0,10);
+  const summary = getInventorySummary(currentProducts);
 
   const stats = [
     {
@@ -89,6 +69,54 @@ const handleDelete = async() => {
     },
   ];
 
+  const productColumns:Column<Product>[] = [
+    {
+    header:"Product",
+    accessor:"title",
+    sortable:false,
+    sort:() => "",
+    sortDirection:null,
+    selectable:false,
+    cell:(prod) => (<div className="flex items-center gap-3">
+                      {prod.thumbnail ? (
+                        <img
+                          src={prod.thumbnail}
+                          alt={prod.title}
+                          className="h-11 w-11 shrink-0 rounded-lg border border-gray-100 bg-gray-50 object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                          <ImageIcon size={20} />
+                        </div>
+                      )}
+
+                      <span className="max-w-[220px] truncate font-medium text-gray-800">
+                        {prod.title}
+                      </span>
+                    </div>)
+  },
+  {
+    header:"Category",
+    accessor:"category",
+    sortable:false,
+    sort:() => "",
+    sortDirection:null,
+    selectable:false,
+    cell:(prod) => (<span className="inline-flex rounded-full bg-violet-100 px-2.5 py-1 text-xs font-bold font-mono text-violet-600">
+                      {prod.category}
+                    </span>)
+  },
+  {
+    header:"Price",
+    accessor:'price',
+    sortable:false,
+    sort:() => "",
+    sortDirection:null,
+    selectable:false,
+    cell:(prod) => (<span className="text-right font-semibold tabular-nums text-gray-900">{formatPrice(prod.price)}</span>)
+  }
+ ]
+
   return (
     <div className="space-y-8">
       {/* Inventory statistics */}
@@ -103,15 +131,15 @@ const handleDelete = async() => {
           return (
             <Card
               key={stat.label}
-              className="border border-gray-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              className="border border-gray-200 bg-linear-to-br from-violet-400 via-violet-950 to-purple-300  p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-bold text-white font-mono uppercase">
                     {stat.label}
                   </p>
 
-                  <p className="mt-3 break-words text-2xl font-bold tracking-tight text-gray-900">
+                  <p className="mt-3 wrap-break-word text-2xl font-bold tracking-tight text-white font-mono">
                     {stat.value}
                   </p>
                 </div>
@@ -125,7 +153,7 @@ const handleDelete = async() => {
 
               <div className="mt-5 flex items-center gap-1.5 border-t border-gray-100 pt-3 text-xs text-gray-500">
                 <ArrowUpRight size={15} className="text-violet-600" />
-                <span>Current inventory overview</span>
+                <span className="text-white">Current inventory overview</span>
               </div>
             </Card>
           );
@@ -150,90 +178,8 @@ const handleDelete = async() => {
           </span>
         </div>
       
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left text-sm">
-            <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
-              <tr>
-                <th scope="col" className="px-6 py-4 font-semibold">
-                  Product
-                </th>
-                <th scope="col" className="px-6 py-4 font-semibold">
-                  Category
-                </th>
-                <th scope="col" className="px-6 py-4 text-right font-semibold">
-                  Price
-                </th>
-                <th scope="col" className="px-6 py-4 text-right font-semibold">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-100">
-              {currentProducts.slice(0, 10).map((prod) => (
-                <tr
-                  key={prod.id}
-                  className="transition-colors hover:bg-violet-50/40"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      {prod.thumbnail ? (
-                        <img
-                          src={prod.thumbnail}
-                          alt={prod.title}
-                          className="h-11 w-11 shrink-0 rounded-lg border border-gray-100 bg-gray-50 object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
-                          <ImageIcon size={20} />
-                        </div>
-                      )}
-
-                      <span className="max-w-[220px] truncate font-medium text-gray-800">
-                        {prod.title}
-                      </span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
-                      {prod.category}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4 text-right font-semibold tabular-nums text-gray-900">
-                    {formatPrice(prod.price)}
-                  </td>
-                  <td className="flex gap-1 px-6 py-4 text-right font-semibold tabular-nums text-gray-900">
-                    <Link href={`/products/edit/${prod.id}`}>
-                    <Button variant="primary" size="sm">Edit</Button>
-                    </Link>
-                    <Button variant="danger" size="sm" onClick={() => {setShowModal(true); setSelectId(prod.id);}}>Delete</Button>
-                  </td>
-                  
-                </tr>
-                
-              ))}
-              
-              {products.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="rounded-full bg-gray-100 p-3 text-gray-400">
-                        <Package size={24} />
-                      </div>
-                      <p className="font-medium text-gray-700">
-                        No products yet
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Your products will appear here when available.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto ">
+          <DataTable rows={tableProducts} columns={productColumns}/>
         </div>
 
         {products.length > 20 && (
@@ -245,37 +191,6 @@ const handleDelete = async() => {
         )}
         
       </Card>
-      {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-xl">
-              <p className="text-lg font-semibold text-gray-900">
-                Are you sure? 
-              </p>
-              <p className="text-center text-gray-600">
-                Do you want to delete this product?
-              </p>
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={()=> setShowModal(false)}>Cancel</Button>
-                <Button variant="danger" onClick={handleDelete}>Confirm</Button>
-              </div>
-            </div>
-          </div>
-        )}
-        {showToast && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-xl">
-              <p className="text-green-500">
-                <CircleCheck className="w-15 h-15"/>
-              </p>
-              <p className="text-lg font-semibold text-gray-900">
-                Product Deleted Successfully
-              </p>
-              <div className="flex gap-3">
-                <Button variant="primary" onClick={()=> setShowToast(false)}>Ok</Button>
-              </div>
-            </div>
-          </div>
-        )}
     </div>
   );
 };
