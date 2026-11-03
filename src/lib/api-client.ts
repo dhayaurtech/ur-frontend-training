@@ -32,14 +32,38 @@ async function request<T>(path:string, options:RequestInit={}):Promise<T>{
         return undefined as T
     }
 
-    const data = await response.json().catch(() => null);
-    if(!response.ok){
-        const message = typeof data?.message === 'string' ? data.message : `Request failed: ${response.status}`
-        console.error("API error response:", data);
-        throw new ApiError(response.status,message)
-    }
+    const responseText = await response.text();
 
-    return data as T;
+let data = null;
+
+try {
+    data = responseText ? JSON.parse(responseText) : null;
+} catch {
+    data = responseText;
+}
+
+if (!response.ok) {
+    console.error('API Status:', response.status);
+    console.error('API Response:', data);
+
+    const message =
+        typeof data?.message === 'string'
+            ? data.message
+            : `Request failed: ${response.status}`;
+
+    throw new ApiError(response.status, message);
+}
+
+return data as T;
+
+    // const data = await response.json().catch(() => null);
+    // if(!response.ok){
+    //     const message = typeof data?.message === 'string' ? data.message : `Request failed: ${response.status}`
+    //     console.error("API error response:", data);
+    //     throw new ApiError(response.status,message)
+    // }
+
+    // return data as T;
 }
 
 export const apiClient = {
@@ -55,7 +79,7 @@ export const apiClient = {
         return request<T>(path,{method:'PATCH',body:JSON.stringify(body)})
     },
 
-    del<T>(path:string){
+    delete<T>(path:string){
         return request<T>(path,{method:'DELETE'})
     }
 }

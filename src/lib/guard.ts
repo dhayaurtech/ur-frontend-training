@@ -9,7 +9,7 @@ export function isProduct(value:unknown):value is Product{
     const val = value as Record<string,unknown>;
 
     return (
-        (typeof val.id === "number" && Number.isFinite(val.id)) &&
+        (typeof val._id === "string" && val._id.length > 0) &&
         (typeof val.title === "string") &&
         (typeof val.description === "string") &&
         (typeof val.category === "string") &&
