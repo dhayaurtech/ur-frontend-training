@@ -24,9 +24,9 @@ type ProductDetailsPageProps = {
 
 export async function generateMetadata({params}:ProductDetailsPageProps):Promise<Metadata>{
     const {id} = await params;
-    const productId = Number(id);
+    const productId = String(id);
 
-    if(!Number.isInteger(productId) || productId<=0){
+    if(!productId){
       return {
         title:"Product Not Found | ShopDesk" 
       }
@@ -49,9 +49,9 @@ const ProductDetailsPage = async ({
   params,
 }: ProductDetailsPageProps) => {
   const { id } = await params;
-  const productId = Number(id);
+  const productId = String(id);
 
-  if(!Number.isInteger(productId) || productId<=0){
+  if(!productId){
     notFound();
   }
 
@@ -96,7 +96,7 @@ const ProductDetailsPage = async ({
             </h1>
 
             <p className="mt-1 text-sm text-gray-500">
-              Product ID: {product.id}
+              Product ID: {product._id}
             </p>
           </div>
 

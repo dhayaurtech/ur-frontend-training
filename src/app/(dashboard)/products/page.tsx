@@ -32,8 +32,6 @@ const Products = async ({searchParams}:ProductsPageProps) => {
     : {};
 
   const page = Math.max(1, Number(params.page) || 1);
-  const category = params.category || "all";
-  const search = params.search || "";
   const sort = params.sort || "title-ascending";
   const limit = Math.min(100,Math.max(1,Number(params.limit) || 10));
 

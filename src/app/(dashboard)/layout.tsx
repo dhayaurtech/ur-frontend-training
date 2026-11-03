@@ -1,21 +1,26 @@
 import type { ReactNode } from "react";
 import DashboardShell from "@/components/DashboardShell";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const user = await getCurrentUser();
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-
-  if(!token){
-    redirect('/login')
+  if (!user) {
+    redirect("/admin/login");
   }
 
-  return <DashboardShell>{children}</DashboardShell>;
-}
+  if (user.role !== "admin") {
+    redirect("/store/product");
+  }
 
+  return (
+    <DashboardShell user={user}>
+      {children}
+    </DashboardShell>
+  );
+}

@@ -1,16 +1,18 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import LoginForm from "@/components/users/LoginForm";
+import { getCurrentUser } from "@/lib/auth";
 
 export default async function LoginPage() {
-  const cookieStore = await cookies();
-  const accessToken = await cookieStore.get('accessToken')?.value;
+  const user = await getCurrentUser();
+    if(user?.role === 'user'){
+      redirect('/store/product');
+    }
 
-  if(accessToken){
-    redirect('/');
-  }
+    if(user?.role === 'admin'){
+      redirect('/');
+    }
   
   return (
-    <LoginForm/>
+    <LoginForm role="user"/>
   );
 }

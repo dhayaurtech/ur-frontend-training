@@ -29,16 +29,12 @@ export async function getProducts(params:GetProductsParams = {},options:RequestI
     if(params.sort) query.set("sort",params.sort);
 
     const suffix = query.toString();
-    console.log(
-  "API request URL:",
-  `/products${suffix ? `?${suffix}` : ""}`
-);
-    const data = await apiClient.get<ProudctsApiResponse>(`/products${suffix ? `?${suffix}`:''}`,options);
 
+    const data = await apiClient.get<ProudctsApiResponse>(`/products${suffix ? `?${suffix}`:''}`,options);
+    
     if(!Array.isArray(data.items) || !data.items.every(isProduct) || typeof data.total !== 'number' || typeof data.page !== 'number' || typeof data.limit !== 'number'){
         throw new Error('Invalid products response from server');
     }
-
     return data;
 }
 
@@ -47,8 +43,8 @@ export async function fetchProducts():Promise<Product[]>{
     return data.items;
 }
 
-export async function getProduct(id:number | string):Promise<Product>{
-    const product = await apiClient.get<Product>(`/products/${encodeURIComponent(String(id))}`);
+export async function getProduct(id:string):Promise<Product>{
+    const product = await apiClient.get<Product>(`/products/${encodeURIComponent(id)}`);
 
     if(!isProduct(product)){
         throw new Error('Invalid product response from server');
@@ -100,7 +96,7 @@ export async function uploadProductImage(file:File): Promise<string>{
 }
 
 export async function deleteProduct(id:number | string):Promise<Product[]>{
-    const products = await apiClient.del<Product[]>(`/products/${encodeURIComponent(String(id))}`);
+    const products = await apiClient.delete<Product[]>(`/products/${encodeURIComponent(String(id))}`);
 
     return products;
 }

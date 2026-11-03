@@ -85,7 +85,7 @@ const ProductForm = ({
   const router = useRouter();
   const product =
     mode === "edit"
-      ? products.find((prod) => prod.id === Number(productId))
+      ? products.find((prod) => prod._id === String(productId))
       : undefined;
 
   const categories: ProductCategory[] = [
@@ -122,14 +122,11 @@ const ProductForm = ({
       setValue("images",updatedImages,{shouldValidate:true,shouldTouch:true})
      }
       const onSubmit = async (data:ProductFormOutput) => {
-        console.log("Form images:", data.images);
-console.log("Selected images:", selectedImages);
+
         const uploadedImages = await Promise.all(
           data.images.map((file) => uploadProductImage(file))
         )
 
-console.log("Uploaded image URLs:", uploadedImages);
-        console.log("Uploaded image URLs:", uploadedImages);
         const submittedProduct = {
           title:data.title,
           category:data.category,
@@ -141,14 +138,13 @@ console.log("Uploaded image URLs:", uploadedImages);
         };
 
         const newImages = data.images;
-        console.log("Product data:", submittedProduct);
-        console.log("New image files:", newImages); 
+
 
         try {
           if(mode === "add"){
             await createProduct(submittedProduct);
           }else if(productId){
-            await updateProduct(Number(productId),submittedProduct);
+            await updateProduct(String(productId),submittedProduct);
           }
           router.push("/products");
           router.refresh();

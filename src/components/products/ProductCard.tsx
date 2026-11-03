@@ -1,8 +1,12 @@
 import type { Product } from "@/types/product";
 import { formatPrice } from "@/lib/formatPrice";
-import { Image as ImageIcon, Package, Star, StarHalf } from "lucide-react";
+import { CircleCheck, Image as ImageIcon, Package, Star, StarHalf } from "lucide-react";
 import Badge from "../ui/Badge";
 import Link from "next/link";
+import Button from "../ui/Button";
+import { apiClient } from "@/lib/api-client";
+import { useState } from "react";
+import Toast from "../ui/Toast";
 
 type ProductCardProps = {
   product: Product;
@@ -10,12 +14,17 @@ type ProductCardProps = {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const stockStatus = product.stock <=0 ? "out-of-stock" : product.stock <=5 ? "low-stock" : "in-stock";
-  const rating = Math.floor(Number(product.rating))
-  const remainingrating = Number(product.rating)-rating
+  const [showToast, setShowToast] = useState(false);
+  async function addToCart(){
+    await apiClient.post('/cart/items',{productId:product._id,quantity:1});
+    setShowToast(true);
+  }
+
   return (
-    <Link href={`/products/${product.id}`}>
+    <>
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border-4 border-violet-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-md">
       {/* Product image */}
+      <Link href={`/store/product/${product._id}`}>
       <div className="relative flex h-48  items-center justify-center overflow-hidden ">
         {product.thumbnail ? (
           <img
@@ -36,19 +45,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <Badge status={stockStatus}/>
         </span>
       </div>
+      </Link>
 
       {/* Product details */}
       <div className="flex flex-1 flex-col p-4 bg-violet-50">
         <p className="mb-2 text-xs font-medium font-mono capitalize text-gray-500">
           {product.category}
         </p>
-
+        <Link href={`/store/product/${product._id}`}>
         <h2
           className="line-clamp-2 min-h-12 font-semibold font-mono leading-6 text-violet-900 transition-colors group-hover:text-violet-700"
           title={product.title}
         >
           {product.title}
         </h2>
+        </Link>
 
         <div className="mt-auto flex items-end justify-between gap-2 border-gray-100">
           <div>
@@ -67,9 +78,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <span className="text-violet-500 font-mono">{product.stock} units</span>
           </div>
         </div>
+        <Button variant='primary' onClick={addToCart}>Add to Cart</Button>
       </div>
     </article>
-    </Link>
+    {showToast && <Toast fun={() => setShowToast(false)} message="Product added to cart successfully"/>}
+    </>
   );
 };
 

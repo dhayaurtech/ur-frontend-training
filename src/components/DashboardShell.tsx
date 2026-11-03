@@ -1,22 +1,27 @@
 "use client";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
+import{ redirect } from 'next/navigation'
+import { AuthUser, getCurrentUser } from "@/lib/auth";
+
+type DashboardShellProps = {
+  children: ReactNode;
+  user: AuthUser | null;
+};
 
 export default function DashboardShell({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-
+  children,user
+}: DashboardShellProps) {
+  
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar isAuthenticated={true}/>
+      <Navbar user={user} isAuthenticated={true}/>
       <div className="flex min-h-[calc(100vh-4rem)]">
         {/* Mobile backdrop */}
         {isMobileOpen && (

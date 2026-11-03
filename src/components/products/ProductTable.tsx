@@ -30,7 +30,7 @@ const ProductTable = ({products, total, page, limit, sort}:productTableProps) =>
   const [showModal, setShowModal] = useState(false);
   const [showSelectionModal, setShowSelectionModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const [selectId, setSelectId] = useState<number | null>(null);
+  const [selectId, setSelectId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -61,11 +61,11 @@ const handleSelectedDelete = async() => {
   if(selectedProduct.length === 0) return;
   setIsDeleting(true);
   try {
-    const selectedIds = selectedProduct.map((prod) => prod.id);
+    const selectedIds = selectedProduct.map((prod) => prod._id);
 
     await Promise.all(selectedIds.map((id) => deleteProduct(id)));
 
-    setCurrentProducts((prevProducts) => prevProducts.filter((prod) => !selectedIds.includes(prod.id)));
+    setCurrentProducts((prevProducts) => prevProducts.filter((prod) => !selectedIds.includes(prod._id)));
     
     setSelectedProduct([]);
     setShowSelectionModal(false);
@@ -86,7 +86,7 @@ const handleSelectedDelete = async() => {
       await deleteProduct(selectId);
   
       setCurrentProducts((prevProducts) =>
-        prevProducts.filter((product) => product.id !== selectId)
+        prevProducts.filter((product) => product._id !== selectId)
       );
 
       setSelectedProduct([]);
@@ -129,7 +129,7 @@ const handleSelectedDelete = async() => {
     sortDirection:sort.startsWith("title-") ? (sort.endsWith("ascending") ? "asc" : "desc") : null,
     selectable:true,
     cell:(prod) => (
-        <Link href={`/products/${prod.id}`}>
+        <Link href={`/products/${prod._id}`}>
             <div className="flex items-center gap-3">
                       {prod.thumbnail ? (
                         <img
@@ -173,17 +173,17 @@ const handleSelectedDelete = async() => {
   },
   {
     header:"Actions",
-    accessor:'id',
+    accessor:'_id',
     sortable:false,
     sort:() => "",
     sortDirection:null,
     selectable:false,
     cell:(prod) => (
       <div className="flex gap-1 font-semibold tabular-nums text-gray-900">
-      <Link href={`/products/edit/${prod.id}`}>
+      <Link href={`/products/edit/${prod._id}`}>
         <Button variant="primary" size="sm">Edit</Button>
       </Link>
-      <Button variant="danger" size="sm" onClick={() => {setSelectId(prod.id);setShowModal(true);}}>Delete</Button>
+      <Button variant="danger" size="sm" onClick={() => {setSelectId(prod._id);setShowModal(true);}}>Delete</Button>
       </div>
     )
   }

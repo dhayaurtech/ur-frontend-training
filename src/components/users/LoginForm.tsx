@@ -19,8 +19,10 @@ type LoginFormData = z.infer<typeof loginSchema>;
 type LoginResponse = {
   accessToken:string;
   user:{
+    id:number;
     name:string;
     email:string;
+    role:'admin' | 'user';
   }
 }
 
@@ -30,7 +32,11 @@ const messages = [
   "Manage your inventory with ease.",
 ];
 
-export default function LoginForm() {
+type LoginFormProps = {
+  role:"admin" | "user";
+}
+
+export default function LoginForm({role}:LoginFormProps) {
   const router = useRouter();
 
   const [messageIndex, setMessageIndex] = useState(0);
@@ -68,13 +74,31 @@ const {register, handleSubmit, formState:{errors, isSubmitting}} = useForm<Login
 
 const onSubmit = async(data:LoginFormData) => {
   try {
-    const result = await apiClient.post<LoginResponse>('/auth/login',data);
 
-    console.log("Login successful : ",result.user);
-    router.push('/')
+    const endpoint = role === "admin" ? '/auth/admin/login' : '/auth/login';
+
+    const result = await apiClient.post<LoginResponse>(endpoint,data);
+    console.log('login result :',result);
+    if(result.user.role !== role){
+      setError("Your account does not match this login");
+      return;
+    }
+
+    
+if (result.user.role === "admin") {
+  router.replace("/");
+} else {
+  router.replace("/store/product");
+}
+
+router.refresh();
   } catch (error) {
-    if(error instanceof Error){
+    if(error instanceof ApiError){
+      setError(error.message);
+    }else if(error instanceof Error){
       setError(error.message)
+    }else{
+      setError('Login failed. Please try again.')
     }
   }
 }
@@ -143,7 +167,7 @@ const onSubmit = async(data:LoginFormData) => {
             className="space-y-8 border-4 border-violet-300 rounded-2xl p-10 bg-violet-200 drop-shadow-lg"
             onSubmit={handleSubmit(onSubmit)}
           >
-            <h1 className="text-center text-violet-500 font-extrabold text-3xl text-shadow-lg text-shadow-violet-300 animate-pulse font-mono">Login</h1>
+            <h1 className="text-center text-violet-500 font-extrabold text-3xl text-shadow-lg text-shadow-violet-300 animate-pulse font-mono">{role === "admin" ? "Admin Login" : "Login"}</h1>
             <div>
               <label
                 htmlFor="email"

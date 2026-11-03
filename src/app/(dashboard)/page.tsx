@@ -4,6 +4,7 @@ import { Package, ArrowRight, Plus } from "lucide-react";
 import InventorySummary from "@/components/InventorySummary";
 import { getProducts, getCategories } from "@/lib/services/products";
 import { cookies } from "next/headers";
+import { getAllOrders } from "@/lib/order-client";
 
 export const metadata:Metadata = {
   title: "Dashboard | ShopDesk",
@@ -18,12 +19,18 @@ export default async function Home() {
       cookie:`accessToken=${token}`,
     }
   }:{};
-  const [result, categories] = await Promise.all([
+  const [result, categories, orderresult] = await Promise.all([
     getProducts({page:1,limit:100},requestOptions),
-    getCategories(requestOptions)
+    getCategories(requestOptions),
+    getAllOrders({search:"",status:"",dateRange:"",sort:"",page:1,limit:100},requestOptions)
   ])
 
   const products = result.items;
+  const ordersRevenue = orderresult.revenue;
+  const orderTotal = orderresult.total;
+  const orders = orderresult.orders;
+  const totalTodaysOrder = orderresult.totalTodayOrders;
+  const todaysRevenue = orderresult.todaysRevenue;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -41,7 +48,7 @@ export default async function Home() {
             Welcome back! Here&apos;s what&apos;s happening with your store.
           </p>
         </div>
-
+        <div className="flex gap-5">
         <Link
           href="/products/new"
           className="inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus:outline-none focus:ring-4 focus:ring-violet-200"
@@ -50,6 +57,15 @@ export default async function Home() {
           Add products
           <ArrowRight size={16} />
         </Link>
+        <Link
+          href="/orders/new"
+          className="inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-700 focus:outline-none focus:ring-4 focus:ring-violet-200"
+        >
+          <Plus size={18} />
+          Create a order
+          <ArrowRight size={16} />
+        </Link>
+        </div>
       </section>
 
       <section className="space-y-4">
@@ -68,7 +84,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <InventorySummary products={products} />
+        <InventorySummary products={products} ordersRevenue={ordersRevenue} ordersTotal={orderTotal} orders={orders} totalTodaysOrder={totalTodaysOrder} todaysRevenue={todaysRevenue}/>
       </section>
     </div>
   );

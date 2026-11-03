@@ -152,7 +152,7 @@ const ProductList = ({ products, initialQuery, total, currentPage, limit, initia
       {searchResult.length > 0 ? (
         <ul className="grid grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {searchResult.map((prod) => (
-            <li key={prod.id} className="min-w-0">
+            <li key={prod._id} className="min-w-0">
               <ProductCard product={prod} />
             </li>
           ))}

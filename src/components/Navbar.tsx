@@ -1,35 +1,22 @@
 "use client";
 import { apiClient } from "@/lib/api-client";
-import { Bell, UserRound, ChevronDown } from "lucide-react";
+import { AuthUser } from "@/lib/auth";
+import { ShoppingCart, Bell, UserRound, ChevronDown, ChevronUp, ArrowBigRight, ArrowRight } from "lucide-react";
+import Link from "next/link";
 import {useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 
 type NavbarProps = {
   isAuthenticated:boolean;
+  user:AuthUser | null;
 }
 
-export default function Navbar({isAuthenticated}:NavbarProps){
+export default function Navbar({isAuthenticated,user}:NavbarProps){
   const router = useRouter();
-  type User = {
-  name: string;
-  email: string;
-};
 
-const [user, setUser] = useState<User | null>(null);
+const [show, setShow] = useState(false);
 
-useEffect(() => {
-  async function fetchUser() {
-    try {
-      const result = await apiClient.get<User>('/auth');
-      setUser(result);
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-    }
-  }
-
-  fetchUser();
-}, []);
   const handleLogout = async() => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`,{
@@ -62,19 +49,21 @@ useEffect(() => {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="relative rounded-xl p-2 text-gray-500 transition hover:bg-violet-50 hover:text-violet-700"
-          >
-            <Bell size={20} />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-violet-600 ring-2 ring-white" />
-          </button>
 
           <div className="hidden h-8 w-px bg-gray-200 sm:block" />
 
           <div className="flex items-center gap-2">
-            {user && isAuthenticated ? (
+            {user && user.role==="user" &&<Link href="/store/cart">
+            <button
+            type="button"
+            aria-label="Notifications"
+            className="relative rounded-xl p-2 text-gray-500 transition hover:bg-violet-50 hover:text-violet-700"
+          >
+            <ShoppingCart size={20} />
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-violet-600 ring-2 ring-white" />
+          </button>
+          </Link>}
+          {user ? (
             <button
               type="button"
               onClick={handleLogout}
@@ -96,11 +85,24 @@ useEffect(() => {
             </div>
 
             <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold text-gray-800">{user ? user.name : "Admin"}</p>
-              <p className="text-xs text-gray-500">Store Manager</p>
+              <p className="text-sm font-semibold text-violet-800">{user ? user.name : "Guest"}</p>
+              <p className="text-xs text-gray-500">{user ? user.role.toUpperCase() : "Nothing" }</p>
             </div>
-
-            <ChevronDown size={16} className="hidden text-gray-400 sm:block" />
+            <div className="relative">
+            {user && user.role ==="user" && <button onMouseEnter={() => setShow(!show)}>
+              {show ? (<ChevronUp size={16} className="hidden text-gray-400 sm:block" />) : (<ChevronDown size={16} className="hidden text-gray-400 sm:block" />)}
+            </button>}
+            {show &&
+              <div className="flex flex-col gap-2 text-white absolute -ml-45 w-50 bg-violet-300 p-2 mt-4 rounded-xl" onMouseLeave={() => setShow(!show)}>
+                {user && user.role==="user" && (
+                <>
+                <p className="bg-violet-400 p-2 rounded-xl">My Account</p>
+                <Link href={`/store/order/myOrders`}><p className="bg-violet-400 p-2 rounded-xl">My Orders</p></Link>
+                </>
+                )}
+              </div>
+            }
+            </div>
         </div>
         </div>
       </nav>
