@@ -105,7 +105,7 @@ router.refresh();
 
   return (
     <main className="flex min-h-screen flex-col bg-white lg:flex-row">
-      <section className="relative flex min-h-85 w-full flex-col justify-between overflow-hidden bg-gradient-to-br from-violet-950 via-violet-800 to-purple-600 px-7 py-8 text-white sm:px-12 sm:py-10 lg:min-h-screen lg:w-1/2 lg:px-16 lg:py-14">
+      <section className="relative flex min-h-85 w-full flex-col justify-between overflow-hidden bg-linear-to-br from-violet-950 via-violet-800 to-purple-600 px-7 py-8 text-white sm:px-12 sm:py-10 lg:min-h-screen lg:w-1/2 lg:px-16 lg:py-14">
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full border border-white/10" />
         <div className="absolute -right-10 -top-10 h-52 w-52 rounded-full border border-white/10" />
         <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-purple-400/20 blur-3xl" />
